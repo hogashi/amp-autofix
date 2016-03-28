@@ -1,0 +1,13 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ruby-protocol-buffers (1.6.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  ruby-protocol-buffers
+
+BUNDLED WITH
+   1.11.2
