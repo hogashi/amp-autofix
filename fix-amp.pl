@@ -96,11 +96,14 @@ package AmpFilter {
             return ($value eq $def->{value}, $def->{value});
         }
 
-        if (exists $def->{value_regex}) {
-            my $value_regex = $def->{value_regex};
-            my $is_valid = $value =~ qr{\A$value_regex\Z};
-            my ($valid_value) = $value_regex =~ m{\A\(([^|]+)|};
-            return ($is_valid, $valid_value);
+        # We always treat as case insensitive for loose validation
+        for my $key (qw{value_regex value_regex_casei}) {
+            if (exists $def->{$key}) {
+                my $value_regex = $def->{$key};
+                my $is_valid = $value =~ qr{\A$value_regex\Z}i;
+                my ($valid_value) = $value_regex =~ m{\A\(?([^|]+)|};
+                return ($is_valid, $valid_value);
+            }
         }
 
         1;
@@ -129,6 +132,11 @@ package AmpFilter {
                 push @$defs, @{$attrs->{attrs}};
             }
         }
+
+        # support layout without parsing amp_layout because users don't write layout directly
+        push @$defs, {
+            name => 'layout',
+        };
 
         $defs;
     }
