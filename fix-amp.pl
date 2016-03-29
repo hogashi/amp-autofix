@@ -84,8 +84,10 @@ package AmpFilter {
         my ($self, $defs, $name) = @_;
 
         for my $def (@$defs) {
-            # TODO: srcset from src
-            return $def if $def->{name} eq $name;
+            return $def if $name eq $def->{name};
+            for my $alternative_name (@{$def->{alternative_names}}) {
+                return $def if $name eq $alternative_name;
+            }
         }
     }
 
