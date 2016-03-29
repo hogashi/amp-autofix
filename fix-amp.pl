@@ -62,23 +62,53 @@ package AmpFilter {
 
         my @attrs = @{$tag->{attrs}};
         while (my ($name, $value) = splice(@attrs, 0, 2)) {
-            if ($self->is_allowed_attribute($attr_defs, $name)) {
-                warn "valid $name = $value";
-                push @attrs_result, $name, $value;
-            } else {
-                warn "invalid $name = $value";
-                $tag->{is_dirty} = 1;
+            if (my $def = $self->allowed_attribute($attr_defs, $name)) {
+                $value = $tag->_remove_quote($value);
+                my ($is_valid_value, $normalized_value) = $self->normalize_attribute_value($def, $value);
+                unless ($is_valid_value) {
+                    $tag->{is_dirty} = 1;
+                    $value = $normalized_value;
+                }
+                if (defined $value) {
+                    warn "valid $name = $value";
+                    push @attrs_result, $name, qq{"$value"};
+                    next;
+                }
             }
+            warn "invalid $name";
+            $tag->{is_dirty} = 1;
         }
         $tag->{attrs} = [@attrs_result];
     }
 
-    sub is_allowed_attribute {
+    sub allowed_attribute {
         my ($self, $defs, $name) = @_;
 
         for my $def (@$defs) {
-            return 1 if $def->{name} eq $name;
+            return $def if $def->{name} eq $name;
         }
+    }
+
+    # returns: (is_valid, normalized_value)
+    sub normalize_attribute_value {
+        my ($self, $def, $value) = @_;
+        if (exists $def->{value}) {
+            return ($value eq $def->{value}, $def->{value});
+        }
+
+        if (exists $def->{value_regex}) {
+            my $value_regex = $def->{value_regex};
+            my $is_valid = $value =~ qr{\A$value_regex\Z};
+            my ($valid_value) = $value_regex =~ m{\A\(([^|]+)|};
+            return ($is_valid, $valid_value);
+        }
+
+        1;
+    }
+
+    sub fix_attribute_value {
+        my ($self, $def, $value) = @_;
+        undef;
     }
 
     sub collect_attr_defs {
