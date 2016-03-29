@@ -28,6 +28,8 @@ package AmpFilter {
                 start => sub {
                     my ($tag, $filter) = @_;
                     $self->filter_remove_tag($tag);
+                    return if $tag->{is_removed};
+                    $self->filter_attribute($tag);
                 },
                 end => sub {
                     my ($tag, $filter) = @_;
@@ -49,6 +51,56 @@ package AmpFilter {
         my ($self, $name) = @_;
 
         !! $self->allowed_tagnames->{$name};
+    }
+
+    sub filter_attribute {
+        my ($self, $tag) = @_;
+
+        my @attrs_result;
+
+        my $attr_defs = $self->collect_attr_defs($tag->name);
+
+        my @attrs = @{$tag->{attrs}};
+        while (my ($name, $value) = splice(@attrs, 0, 2)) {
+            if ($self->is_allowed_attribute($attr_defs, $name)) {
+                warn "valid $name = $value";
+                push @attrs_result, $name, $value;
+            } else {
+                warn "invalid $name = $value";
+                $tag->{is_dirty} = 1;
+            }
+        }
+        $tag->{attrs} = [@attrs_result];
+    }
+
+    sub is_allowed_attribute {
+        my ($self, $defs, $name) = @_;
+
+        for my $def (@$defs) {
+            return 1 if $def->{name} eq $name;
+        }
+    }
+
+    sub collect_attr_defs {
+        my ($self, $name) = @_;
+
+        my $defs;
+        my $validation_rules = $self->validation_rules;
+
+        for my $tag (@{ $validation_rules->{tags} }) {
+            if ($tag->{tag_name} eq $name) {
+                push @$defs, @{$tag->{attrs}};
+            }
+        }
+
+
+        for my $attrs (@{$self->validation_rules->{attr_lists}}) {
+            if ($attrs->{name} eq '$GLOBAL_ATTRS') {
+                push @$defs, @{$attrs->{attrs}};
+            }
+        }
+
+        $defs;
     }
 
     sub allowed_tagnames {
