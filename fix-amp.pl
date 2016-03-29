@@ -44,6 +44,7 @@ package AmpFilter {
     sub filter_remove_tag {
         my ($self, $tag) = @_;
         return if $self->is_allowed_tagname($tag->name);
+        warn "remove @{[ $tag->as_string ]}";
         $tag->remove_tag;
     }
 
@@ -139,11 +140,6 @@ package AmpFilter {
                 push @$defs, @{$attrs->{attrs}};
             }
         }
-
-        # support layout without parsing amp_layout because users don't write layout directly
-        push @$defs, {
-            name => 'layout',
-        };
 
         $defs;
     }
