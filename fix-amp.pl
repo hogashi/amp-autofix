@@ -70,7 +70,6 @@ package AmpFilter {
                     $value = $normalized_value;
                 }
                 if (defined $value) {
-                    warn "valid $name = $value";
                     push @attrs_result, $name, qq{"$value"};
                     next;
                 }
@@ -85,6 +84,7 @@ package AmpFilter {
         my ($self, $defs, $name) = @_;
 
         for my $def (@$defs) {
+            # TODO: srcset from src
             return $def if $def->{name} eq $name;
         }
     }
@@ -118,17 +118,22 @@ package AmpFilter {
         my ($self, $name) = @_;
 
         my $defs;
+        my $attr_lists = {'$GLOBAL_ATTRS' => 1};
         my $validation_rules = $self->validation_rules;
 
         for my $tag (@{ $validation_rules->{tags} }) {
             if ($tag->{tag_name} eq $name) {
                 push @$defs, @{$tag->{attrs}};
+                if (exists $tag->{attr_lists}) {
+                    $attr_lists->{$_} = 1 for @{$tag->{attr_lists}};
+                }
+                if (exists $tag->{amp_layout}) {
+                    $attr_lists->{'$AMP_LAYOUT_ATTRS'} = 1;
+                }
             }
         }
-
-
         for my $attrs (@{$self->validation_rules->{attr_lists}}) {
-            if ($attrs->{name} eq '$GLOBAL_ATTRS') {
+            if ($attr_lists->{$attrs->{name}}) {
                 push @$defs, @{$attrs->{attrs}};
             }
         }
