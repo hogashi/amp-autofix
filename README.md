@@ -1,12 +1,13 @@
-# sketch-auto-autofix
+# sketch-amp-autofix
 
 ## バリデーションルールのJSONつくりたい!
 
 ```
 git submodule update --init
-brew install probuf
-gem install
-bundle exec -- ruby validator-protoascii-to-json.rb | validation_rules.json
+brew install protobuf
+gem install bundler
+bundle install --path vendor/bundle
+bundle exec -- ruby validator-protoascii-to-json.rb > validation_rules.json
 ```
 
 ## 自動でAMPをHTMLに直したい!
