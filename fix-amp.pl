@@ -96,10 +96,20 @@ package AmpFilter {
     # returns: (is_valid, normalized_value)
     sub normalize_attribute_value {
         my ($self, $def, $value) = @_;
+
+        # case sensitive value
         if (exists $def->{value} && (scalar @{ $def->{value} } > 0)) {
             for my $def_value (@{ $def->{value} }) {
                 if ($value eq $def_value) {
                     return (1, $def_value);
+                }
+                # normalize when lowercase is correct
+                if (lc $value eq $def_value) {
+                    return (0, lc $def_value);
+                }
+                # normalize when uppercase is correct
+                if (uc $value eq $def_value) {
+                    return (0, uc $def_value);
                 }
             }
 
@@ -107,14 +117,61 @@ package AmpFilter {
             return (0, $def->{value}[0]);
         }
 
-        # We always treat as case insensitive for loose validation
-        for my $key (qw{value_regex value_regex_casei}) {
-            if (exists $def->{$key}) {
-                my $value_regex = $def->{$key};
-                my $is_valid = $value =~ qr{\A$value_regex\Z}i;
-                my ($valid_value) = $value_regex =~ m{\A\(?([^|]+)|};
-                return ($is_valid, $valid_value);
+        # case insensitive value
+        if (exists $def->{value_casei} && (scalar @{ $def->{value_casei} } > 0)) {
+            for my $def_value_casei (@{ $def->{value_casei} }) {
+                # case insensitive value is always lowercase
+                if (lc $value eq $def_value_casei) {
+                    return (1, $def_value_casei);
+                }
             }
+
+            # return first value when not valid
+            return (0, $def->{value_casei}[0]);
+        }
+
+        # case sensitive value in regular expression
+        my $value_regex = $def->{value_regex};
+        if ($value_regex) {
+            my $is_valid = $value =~ qr{\A$value_regex\Z};
+            if ($is_valid) {
+                return (1, $value);
+            }
+            # normalize when lowercase is correct
+            $is_valid = lc $value =~ qr{\A$value_regex\Z};
+            if ($is_valid) {
+                return (0, lc $value);
+            }
+            # normalize when uppercase is correct
+            $is_valid = uc $value =~ qr{\A$value_regex\Z};
+            if ($is_valid) {
+                return (0, uc $value);
+            }
+
+            my ($extracted_default_value) = $value_regex =~ m{\A\(?([^|]+)|};
+            $is_valid = $extracted_default_value =~ qr{\A$value_regex\Z};
+            if ($is_valid) {
+                return (0, $extracted_default_value);
+            }
+
+            return (0, undef);
+        }
+
+        # case insensitive value in regular expression
+        my $value_regex_casei = $def->{value_regex_casei};
+        if ($value_regex_casei) {
+            my $is_valid = $value =~ qr{\A$value_regex_casei\Z}i;
+            if ($is_valid) {
+                return (1, $value);
+            }
+
+            my ($extracted_default_value) = $value_regex_casei =~ m{\A\(?([^|]+)|};
+            my $extract_default_value_is_valid = $extracted_default_value =~ qr{\A$value_regex_casei\Z}i;
+            if ($extract_default_value_is_valid) {
+                return (0, $extracted_default_value);
+            }
+
+            return (0, undef);
         }
 
         1;
