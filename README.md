@@ -12,7 +12,7 @@ bundle install --path vendor/bundle
 bundle exec -- ruby validator-protoascii-to-json.rb > validation_rules.json
 ```
 
-### 自動でAMPをHTMLに直したい!
+### 自動でAMP HTMLを直したい!
 
 ```
 carton install
