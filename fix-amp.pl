@@ -215,6 +215,7 @@ package AmpFilter {
         my $defs = $self->validation_rules->{tags};
         for my $def (@$defs) {
             next if $def->{mandatory_parent}; # skip because we are working on blog article, not whole html
+            next if $def->{tag_name} eq 'SCRIPT'; # skip because we are working on blog article, not whole html
             $names->{$def->{tag_name}} = 1;
         }
 
