@@ -1,4 +1,4 @@
-# sketch-amp-autofix
+# amp-autofix
 
 ## バリデーションルールのJSONつくりたい!
 
