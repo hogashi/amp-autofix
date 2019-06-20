@@ -113,11 +113,6 @@ package AmpFilter {
         1;
     }
 
-    sub fix_attribute_value {
-        my ($self, $def, $value) = @_;
-        undef;
-    }
-
     sub collect_attr_defs {
         my ($self, $name) = @_;
 
