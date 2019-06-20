@@ -51,6 +51,7 @@ package AmpFilter {
     sub is_allowed_tagname {
         my ($self, $name) = @_;
 
+        $name = uc $name;
         !! $self->allowed_tagnames->{$name};
     }
 
@@ -119,6 +120,8 @@ package AmpFilter {
 
     sub collect_attr_defs {
         my ($self, $name) = @_;
+
+        $name = uc $name;
 
         my $defs;
         my $attr_lists = {'$GLOBAL_ATTRS' => 1};
