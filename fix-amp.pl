@@ -96,8 +96,15 @@ package AmpFilter {
     # returns: (is_valid, normalized_value)
     sub normalize_attribute_value {
         my ($self, $def, $value) = @_;
-        if (exists $def->{value}) {
-            return ($value eq $def->{value}, $def->{value});
+        if (exists $def->{value} && (scalar @{ $def->{value} } > 0)) {
+            for my $def_value (@{ $def->{value} }) {
+                if ($value eq $def_value) {
+                    return (1, $def_value);
+                }
+            }
+
+            # return first value when not valid
+            return (0, $def->{value}[0]);
         }
 
         # We always treat as case insensitive for loose validation
